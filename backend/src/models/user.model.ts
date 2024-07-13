@@ -13,7 +13,6 @@ export type UserType = {
     refreshToken?: string;
     isPasswordCorrect: (password : string) => Promise<boolean>;
     generateAccessToken: () => string;
-    generateRefreshToken: () => string;
 }
 
 const userSchema = new Schema<UserType>({

@@ -3,7 +3,7 @@ import mongoose, { ObjectId, Schema } from "mongoose";
 export type TaskType = {
     _id: string;
     title: string;
-    description?: string;
+    description: string;
     author: ObjectId;
     status: "TODO" | "DOING" | "DONE";
     dueDate: Date;
@@ -36,6 +36,7 @@ const taskSchema = new Schema<TaskType>({
     },
     dueDate:{
         type:Date,
+        default:Date.now(),
     },
     priority:{
         type:Number,

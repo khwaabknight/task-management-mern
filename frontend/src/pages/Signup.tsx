@@ -2,13 +2,14 @@ import React, { useState } from 'react'
 import { RxEyeClosed, RxEyeOpen } from "react-icons/rx";
 import { Link, useNavigate } from 'react-router-dom';
 import axios from 'axios';
-import { Input } from '../ui/input';
-import { Label } from '../ui/label';
-import { Button } from '../ui/button';
+import { Input } from '../components/ui/input';
+import { Label } from '../components/ui/label';
+import { Button } from '../components/ui/button';
 import { IoLogInOutline } from "react-icons/io5";
 import { useDispatch } from 'react-redux';
-import { setUser } from '../../store/features/user/userSlice';
-import BgProvider from '../Providers/BgProvider';
+import { setUser } from '../store/features/user/userSlice';
+import BgProvider from '../components/Providers/BgProvider';
+import toast from 'react-hot-toast';
 
 type SignupFormVals = {
     fullname: string,
@@ -52,16 +53,19 @@ function Signup() {
           localStorage.setItem("token", token)
           localStorage.setItem("user", JSON.stringify(user))
 
-          dispatch(setUser(user))
+          dispatch(setUser({user, token: token}))
           navigate('/')
+
+          toast.success("Signup successful")
         }).catch((error) => {
-          console.log(error);
+            console.log(error);
+            toast.error("Signup failed")
         })
     }
 
     return (
-        <BgProvider>
-            <div className='flex justify-around items-center px-10'>
+        <BgProvider imgSrc='/images/auth-bg.jpg'>
+            <div className='flex justify-around items-center md:px-10 px-5 bg-white/20 backdrop-blur-lg rounded-lg'>
                 <div className='md:w-1/2 sm:w-2/5 w-0 md:p-20 sm:p-10 flex justify-center items-center overflow-hidden'>
                     <div>
                         <img src='/images/signup-side.jpg' alt='' className='object-contain w-full'/>
@@ -69,7 +73,7 @@ function Signup() {
                 </div>
 
                 <div className='md:w-2/3 sm:w-3/5 w-full flex justify-center items-center pt-20 pb-8'>
-                    <div className='border rounded-lg relative flex flex-col items-center gap-3 p-5 sm:px-2 md:w-full h-full w-5/6'>
+                    <div className='border rounded-lg relative flex flex-col items-center gap-3 p-5 sm:px-2 lg:w-full md:w-full w-5/6'>
                         <div className='rounded-full p-1 border bg-white absolute top-0 left-1/2 -translate-y-1/2 -translate-x-1/2'>
                             <div className='aspect-square rounded-full overflow-hidden '>
                                 <img src='/images/auth.jpg' alt='' className='object-contain h-16 w-full'/>

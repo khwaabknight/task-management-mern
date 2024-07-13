@@ -2,18 +2,19 @@ import React, { useState } from 'react'
 import { RxEyeClosed, RxEyeOpen } from "react-icons/rx";
 import { Link, useNavigate } from 'react-router-dom';
 import axios from 'axios';
-import { Input } from '../ui/input';
-import { Label } from '../ui/label';
+import { Input } from '../components/ui/input';
+import { Label } from '../components/ui/label';
 import {
   HoverCard,
   HoverCardContent,
   HoverCardTrigger,
-} from "../ui/hover-card"
-import { Button } from '../ui/button';
+} from "../components/ui/hover-card"
+import { Button } from '../components/ui/button';
 import { IoLogInOutline } from "react-icons/io5";
 import { useDispatch } from 'react-redux';
-import { setUser } from '../../store/features/user/userSlice';
-import BgProvider from '../Providers/BgProvider';
+import { setUser } from '../store/features/user/userSlice';
+import BgProvider from '../components/Providers/BgProvider';
+import toast from 'react-hot-toast';
 
 type LoginFormVals = {
   email:string,
@@ -50,18 +51,21 @@ function Login() {
       localStorage.setItem("token", token)
       localStorage.setItem("user", JSON.stringify(user))
       
-      dispatch(setUser(user))
+      dispatch(setUser({user, token: token}))
       navigate('/')
+
+      toast.success("Login successful")
     }).catch((error) => {
       console.log(error);
+      toast.error("Login failed")
     })
   }
   
   return (
-    <BgProvider>
-      <div className='flex justify-around items-center px-10'>
-        <div className='md:w-2/3 sm:w-3/5 w-full flex justify-center items-center pt-20 pb-8'>
-          <div className='border rounded-lg relative flex flex-col items-center gap-3 p-5 h-full md:w-full sm:w-3/5 w-5/6'>
+    <BgProvider imgSrc='/images/auth-bg.jpg'>
+      <div className='flex justify-around items-center md:px-10 px-5 bg-white/20 backdrop-blur-lg rounded-lg'>
+        <div className='md:w-full sm:w-3/5 w-full flex justify-center items-center pt-20 pb-8'>
+          <div className='border rounded-lg relative flex flex-col items-center gap-3 p-3 sm:p-5 w-full sm:w-4/5'>
             <div className='rounded-full p-1 border bg-white absolute top-0 left-1/2 -translate-y-1/2 -translate-x-1/2'>
               <div className='aspect-square rounded-full overflow-hidden '>
                 <img src='/images/auth.jpg' alt='' className='object-contain h-16'/>

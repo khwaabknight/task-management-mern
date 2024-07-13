@@ -1,21 +1,21 @@
 import { Request, Response } from 'express';
-import User from '../models/user.model';
 import Task from '../models/task.model';
-import mongoose from 'mongoose';
 require('dotenv').config();
+
+type Filter = "All" | "TODO" | "DOING" | "DONE" | "Priority-1" | "Priority-2" | "Priority-3" | "Priority-4" | "Priority-5";
 
 export const allTasks = async (req: Request, res: Response) => {
     // get all tasks
     // return success response
     try {
-        const {userId} = req.params;
+        const userId = req.body.user._id;
         const tasks = await Task.find({author: userId}).sort({createdAt: -1}).exec();
         return res.status(200).json({
             success: true,
             error: false,
             message: "All tasks fetched successfully",
             data: tasks,
-        });        
+        });
     } catch (error) {
         console.error("Error in GET_ALL_TASKS controller: ", error);
         return res.status(500).json({
@@ -23,8 +23,8 @@ export const allTasks = async (req: Request, res: Response) => {
             error: true,
             message: "Internal Server Error",
             data: null,
-        });        
-    }    
+        });
+    }
 }
 
 export const createTask = async (req: Request, res: Response) => {
@@ -33,7 +33,9 @@ export const createTask = async (req: Request, res: Response) => {
     // push task id to user tasks array
     // return success response
 
-    const { userId, title, description, status, dueDate, priority } = req.body;
+    const userId = req.body.user._id;
+    const {title, description, status, dueDate, priority } = req.body;
+
     if (!userId || !title || !description) {
         return res.status(400).json({
             success: false,
@@ -49,16 +51,18 @@ export const createTask = async (req: Request, res: Response) => {
             description,
             author: userId,
             status,
-            dueDate,
+            dueDate:new Date(dueDate),
             priority,
         });
         await newTask.save();
+
+        const newTasks = await Task.find({author: userId}).sort({createdAt: -1}).exec();
 
         return res.status(200).json({
             success: true,
             error: false,
             message: "Task created successfully",
-            data: newTask,
+            data: newTasks,
         });
         
     } catch (error) {
@@ -68,21 +72,24 @@ export const createTask = async (req: Request, res: Response) => {
             error: true,
             message: "Internal Server Error",
             data: null,
-        });        
+        });
     }
 }
 
 export const updateTask = async (req: Request, res: Response) => {
     // check if required fields are provided
     // check if task exists
+    // check if user is authorized to update task
     // update task
     // return success response
 
-    const { taskId, title, description, status, dueDate, priority } = req.body;
+    const userId = req.body.user._id;
+    const { taskId } = req.params;
+    const { title, description, status, dueDate, priority } = req.body;
 
     try {
         const task = await Task.findById(taskId);
-        if (!task) {
+        if (!task || task.author.toString() !== userId.toString()){
             return res.status(404).json({
                 success: false,
                 error: true,
@@ -97,11 +104,13 @@ export const updateTask = async (req: Request, res: Response) => {
         if (priority) task.priority = priority;
         await task.save();
 
+        const newTasks = await Task.find({author: userId}).sort({createdAt: -1}).exec();
+
         return res.status(200).json({
             success: true,
             error: false,
             message: "Task updated successfully",
-            data: task,
+            data: newTasks,
         });
         
     } catch (error) {
@@ -116,20 +125,34 @@ export const updateTask = async (req: Request, res: Response) => {
 }
 
 export const deleteTask = async (req: Request, res: Response) => {
+
     // check if required fields are provided
     // check if task exists
+    // check if user is authorized to delete task
     // delete task
     // return success response
 
-    const { taskId } = req.body;
+    const userId = req.body.user._id;
+    const { taskId } = req.params;
 
     try {
+        const task = await Task.findById(taskId);
+        console.log("task : ",task);
+        if (!task || task.author.toString() !== userId.toString()){
+            return res.status(404).json({
+                success: false,
+                error: true,
+                message: "Task not found",
+                data: null,
+            });
+        }
         await Task.findByIdAndDelete(taskId);
+        const newTasks = await Task.find({author: userId}).sort({createdAt: -1}).exec();
         return res.status(200).json({
             success: true,
             error: false,
             message: "Task deleted successfully",
-            data: null,
+            data: newTasks,
         });
         
     } catch (error) {
@@ -148,10 +171,17 @@ export const searchTask = async (req: Request, res: Response) => {
     // search task
     // return success response
 
-    const { userId, search} = req.params;
+    const userId = req.body.user._id;
+    const { search} = req.query ?? "";
+
+    console.log("userId : ",userId,"\nsearch : ",search);
+    
 
     try {
-        const tasks = await Task.find({author: userId, title:{ $regex: `^${search}`, $options: 'i' }}).exec();
+        const tasks = await Task.find({
+            author: userId,
+            title:{ $regex: `^${search}`, $options: 'i' },
+        }).exec();
         return res.status(200).json({
             success: true,
             error: false,
@@ -170,47 +200,38 @@ export const searchTask = async (req: Request, res: Response) => {
     }
 }
 
-export const filterTaskByPriority = async (req: Request, res: Response) => {
+export const filterTasks = async (req: Request, res: Response) => {
     // check if required fields are provided
     // search task
     // return success response
 
-    const { userId, priority } = req.params;
+    const userId = req.body.user._id;
+
+    const { filter } = req.query ?? "All";
+
     try {
-        const tasks = await Task.find({author: userId, priority}).exec();
+        let tasks;
+        if(filter === "Priority-1" || filter === "Priority-2" || filter === "Priority-3" || filter === "Priority-4" || filter === "Priority-5"){
+            tasks = await Task
+            .find({author: userId, priority: parseInt(filter[filter.length - 1])})
+            .exec();
+        }else if(filter === "TODO" || filter === "DOING" || filter === "DONE"){
+            tasks = await Task
+            .find({author: userId, status: filter})
+            .exec();
+        }else{
+            tasks = await Task
+            .find({author: userId})
+            .exec();
+        }
         return res.status(200).json({
             success: true,
             error: false,
             message: "Task filtered successfully",
             data: tasks,
-        });        
+        });
     } catch (error) {
         console.error("Error in FILTER_TASK_BY_PRIORITY controller: ", error);
-        return res.status(500).json({
-            success: false,
-            error: true,
-            message: "Internal Server Error",
-            data: null,
-        });
-    }    
-}
-
-export const filterTaskByStatus = async (req: Request, res: Response) => {
-    // check if required fields are provided
-    // search task
-    // return success response
-
-    const { userId, status } = req.params;
-    try {
-        const tasks = await Task.find({author: userId, status}).exec();
-        return res.status(200).json({
-            success: true,
-            error: false,
-            message: "Task filtered successfully",
-            data: tasks,
-        });        
-    } catch (error) {
-        console.error("Error in FILTER_TASK_BY_STATUS controller: ", error);
         return res.status(500).json({
             success: false,
             error: true,

@@ -18,20 +18,20 @@ const initialState: UserState = {
     fullname: '',
     email: '',
   },
-  token: localStorage.getItem('user') ? JSON.parse(localStorage.getItem('user')!) : null,
+  token: localStorage.getItem('token') ?? null,
 }
 
 export const userSlice = createSlice({
   name: 'user',
   initialState,
   reducers: {
-    setUser: (state, action:PayloadAction<UserType>) => {
-      state.user._id = action.payload._id
-      state.user.email = action.payload.email
-      state.user.fullname = action.payload.fullname
+    setUser: (state, action:PayloadAction<UserState>) => {
+      state.user = action.payload.user
+      state.token = action.payload.token
     },
     resetUser: (state) => {
       localStorage.removeItem('user')
+      localStorage.removeItem('token')
       state.user = {
         _id: '',
         fullname: '',
