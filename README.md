@@ -70,5 +70,4 @@ https://github.com/user-attachments/assets/9fd7301e-7159-4ce1-8b53-ebc35a5478f5
 
 2. Task management:
 
-
-
+https://github.com/user-attachments/assets/5c1ed77b-d2b8-49c0-bf16-83909c8890e9
