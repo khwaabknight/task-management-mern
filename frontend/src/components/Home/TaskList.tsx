@@ -34,35 +34,20 @@ function TaskList() {
             tasks.length === 0 ?
             <div>No tasks matching your filter</div> :
             tasks.map((task : TaskType) => (
-                <div key={task._id} className="flex justify-between items-center border-b border-blue-300 p-2 w-full">
-                    <div className="w-full flex flex-col gap-2">
-                        <div className="flex justify-between">
-                            <h3 className="text-3xl font-semibold">{task.title}</h3>
-                            <div className="flex gap-2">
-                                <UpdateTaskButton task={task}/>
-                                <Button type="button" className="hover:bg-red-600 bg-red-500 text-white rounded-lg" onClick={() => deleteHandler(task._id)}>Delete</Button>
-                            </div>
-                        </div>
-                        <p className="text-gray-600 text-base pl-3">{task.description}</p>
-                        <div className="flex gap-5">
-                            <p className="rounded-sm px-3 py-1 bg-lime-200">Due by : {(new Date(task.dueDate)).toDateString()}</p>
-                            <p className={`
-                                ${task.priority === 5 && "bg-red-500"}
-                                ${task.priority === 4 && "bg-orange-500"}
-                                ${task.priority === 3 && "bg-yellow-500"}
-                                ${task.priority === 2 && "bg-lime-500"}
-                                ${task.priority === 1 && "bg-green-500"}
-                                text-white rounded-sm px-3 py-1`
-                            }>Priority : {task.priority}</p>
-                            <p className={`
-                                ${task.status === "DONE" && "bg-green-500"}
-                                ${task.status === "DOING" && "bg-yellow-500"}
-                                ${task.status === "TODO" && "bg-red-500"}
-                                text-white rounded-sm px-3 py-1`
-                            }>Status : {task.status}</p>
-                        </div>
+                <div key={task._id} className="flex justify-between items-center border-b border-blue-300 py-2 w-full">
+                    <div>
+                        <h3 className="text-xl font-semibold">{task.title}</h3>
+                        <p>{task.description}</p>
+                        <p>
+                        {
+                            (new Date(task.dueDate)).toDateString()
+                        }
+                        </p>
                     </div>
-                    
+                    <div className="flex gap-2">
+                        <UpdateTaskButton task={task}/>
+                        <Button type="button" className="hover:bg-red-600 bg-red-500 text-white rounded-lg" onClick={() => deleteHandler(task._id)}>Delete</Button>
+                    </div>
                 </div>
             ))
         }

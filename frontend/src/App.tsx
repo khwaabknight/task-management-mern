@@ -5,7 +5,6 @@ import ProtectedRoute from './components/Auth/ProtectedRoute';
 import Signup from './pages/Signup';
 import Login from './pages/Login';
 import Home from './pages/Home';
-import NotFound from './pages/404';
 
 function App() {
   return (
@@ -27,10 +26,6 @@ function App() {
           <PublicRoute >
             <Signup/>
           </PublicRoute>
-        }/>
-        {/* 404 route */}
-        <Route path="*" element={
-          <NotFound />
         }/>
       </Routes>
     </div>
